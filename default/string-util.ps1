@@ -352,14 +352,6 @@ String object. rever all case at alphabet.
     return $result
 }
 
-function test-ary(){
-    param(
-        [Parameter(ValueFromPipeline=$true,Mandatory=$true)]
-        $tgt
-    )
-    echo $tgt
-}
-
 function get-substring(){
 <#
 .SYNOPSIS
