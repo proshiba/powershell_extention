@@ -1,7 +1,12 @@
 function set-MyEnv {
-	$env:PSFactory="C:\drive\factory\powershell"
+    $env:PSFactory = Read-Host "Please set Full path of your powershell module"
+    if(!(test-path $env:PSFactory)){
+        echo "this path is not exist! please set correct path at set-myenv function"
+    }
 }
-set-MyEnv
+if($env:factory -eq $null){
+    set-MyEnv
+}
 
 function get-PSScriptsName($dir){
   if($dir -is [String]){

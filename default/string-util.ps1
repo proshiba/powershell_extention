@@ -461,8 +461,6 @@ Trim str1 and str2 and Blank(include tab or CRLF) top(or tail).
 
 
 
-# by basic function
-
 # by custom function
 Set-Alias enc-ps64 encode-To-PsEnc64
 Set-Alias dec-ps64 decode-From-PsEnc64
