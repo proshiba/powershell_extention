@@ -1,0 +1,1 @@
+certutil.exe -encode .\moto.exe tmp.txt
