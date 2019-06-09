@@ -1,3 +1,4 @@
 # config is ignore
-*/config/
-*/_private/
+*/config/*
+
+*/_private/*
